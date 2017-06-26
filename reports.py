@@ -1,17 +1,16 @@
 # Report functions
-import csv
+import operator
 
 
-def count_games(file_name):
-    num_lines = sum(1 for line in open('file_name'))
+def count_games(filename="game_stat.txt"):
+    num_lines = sum(1 for line in open(filename))
     return num_lines
 
 
-def decide(file_name, year):
-    datafile = file('file_name')
-    found = False
-    for line in datafile:
-        if year in line:
+def decide(filename="game_stat.txt", year="2000"):
+    f = open(filename, 'r')
+    for line in f:
+        if str(year) in line:
             found = True
             break
     return found
@@ -44,21 +43,41 @@ def count_by_genre(filename="game_stat.txt", genre="First-person shooter"):
 
 def get_line_number_by_title(filename="game_stat.txt", title="lófasz"):
     f = open(filename, 'r')
-    lines = 0
+    games = f.readlines()
+    titles = [title.split('\t')[0] for title in games]
+    try:
+        line_number_of_title = titles.index(title) + 1
+        return line_number_of_title
+    except ValueError:
+        return('There is no game with the given name')
+
+
+def sort_abc(filename="game_stat.txt"):
+    abc_list = []
+    f = open(filename, 'r')
     for line in f:
         a = line.split("\t")
-        lines += 1
-        if(a[0] == title):
-            try:
-                if (a[0] == title):
-                    return lines
-            except ValueError:
-                return "There is no game with that title"
+        abc_list.append(a[0])
+    return sorted(abc_list)
 
 
+def get_genres(filename="game_stat.txt"):
+    genre_set = set()
+    f = open(filename, 'r')
+    for line in f:
+        a = line.split("\t")
+        genre_set.add(a[3])
+    return sorted(genre_set, key=str.lower)
 
 
-
-print(get_line_number_by_title(filename="game_stat.txt", title="lófasz"))
-# if __name__ == "__main__":
-#     main()
+def when_was_top_sold_fps(filename="game_stat.txt"):
+    fps_year = {}
+    f = open(filename, 'r')
+    for line in f:
+        a = line.split("\t")
+        if a[3] == "First-person shooter":
+            fps_year[int(a[2])] = float(a[1])
+    if fps_year == {}:
+        raise ValueError("No such genre in the input file.")
+    sorted_dict = sorted(fps_year.items(), key=operator.itemgetter(1))
+    return sorted_dict[-1][0]
